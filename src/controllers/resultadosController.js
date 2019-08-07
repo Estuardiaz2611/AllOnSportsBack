@@ -1,30 +1,32 @@
 'use strict'
 
-var Resultados = require('../models/resultados');
+var Resultado = require('../models/resultados');
 var path = require('path');
 var fs = require('fs');
 
 function registrarResultado(req, res) {
-    var resultados = new Resultados();
+    var resultado = new Resultado();
     var params = req.body;
 
     if (params.descripcion) {
-        partido.descripcion = params.descripcion;
-        partido.image = null;
+        resultado.descripcion = params.descripcion;
+        resultado.image = null;
+        resultado.usuario = req.user.sub;
+
 
         Partido.find({
             $or: [
-                { descripcion: resultados.descripcion.toLowerCase() }
+                { descripcion: resultado.descripcion.toLowerCase() }
             ]
         }).exec((err, users) => {
             if (err) return res.status(500).send({ message: 'Error en la peticion de resultado' })
 
             else {
-                resultados.save((err, resultadosGuardado) => {
+                resultado.save((err, resultadoGuardado) => {
                     if (err) return res.status(500).send({ message: 'Error a la hora de guardar el resultado' })
 
-                    if (resultadosGuardado) {
-                        res.status(200).send({ partido: resultadosGuardado })
+                    if (resultadoGuardado) {
+                        res.status(200).send({ resultado: resultadoGuardado })
                     } else {
                         res.status(404).send({ message: 'no se a podido registrar el resultado' })
                     }
@@ -37,7 +39,7 @@ function registrarResultado(req, res) {
 }
 
 function subirImagenResultado(req, res) {
-    var resultadosId = req.params.id;
+    var resultadoId = req.params.id;
 
     if (req.files) {
         var file_path = req.files.image.path;
@@ -56,12 +58,12 @@ function subirImagenResultado(req, res) {
         console.log(file_ext);
 
         if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif') {
-            Resultados.findByIdAndUpdate(resultadosId, { image: file_name }, { new: true }, (err, resultadosActualizado) => {
+            Resultado.findByIdAndUpdate(resultadoId, { image: file_name }, { new: true }, (err, resultadoActualizado) => {
                 if (err) return res.status(500).send({ message: 'Error en la peticion' })
 
-                if (!resultadosActualizado) return res.status(404).send({ message: 'no se a podido actualizar el resultado' })
+                if (!resultadoActualizado) return res.status(404).send({ message: 'no se a podido actualizar el resultado' })
 
-                return res.status(200).send({ resultados: resultadosActualizado })
+                return res.status(200).send({ resultado: resultadoActualizado })
             });
         } else {
             return removeFilerOfUploads(res, file_path, 'Extension no valida')
@@ -89,50 +91,50 @@ function getImageFileResultado(req, res) {
 }
 
 function editarResultado(req, res) {
-    var resultadosId = req.params.id;
+    var resultadoId = req.params.id;
     var params = req.body;
 
-    Resultados.findByIdAndUpdate(resultadosId, params, { new: true }, (err, resultadosActualizado) => {
+    Resultado.findByIdAndUpdate(resultadoId, params, { new: true }, (err, resultadoActualizado) => {
         if (err) return res.status(500).send({ message: 'error en la peticion' });
 
-        if (!resultadosActualizado) return res.status(404).send({ message: 'no se a podido actualizar el resultado' });
+        if (!resultadoActualizado) return res.status(404).send({ message: 'no se a podido actualizar el resultado' });
 
-        return res.status(200).send({ resultados: resultadosActualizado });
+        return res.status(200).send({ resultado: resultadoActualizado });
     });
 }
 
 function eliminarResultado(req, res) {
-    var resultadosId = req.params.id;
+    var resultadoId = req.params.id;
 
-    Resultados.findByIdAndDelete(resultadosId, (err, resultadoEliminado) => {
+    Resultado.findByIdAndDelete(resultadoId, (err, resultadoEliminado) => {
         if (err) return res.status(500).send({ message: 'Error en la peticion' });
 
         if (!resultadoEliminado) return res.status(404).send({ message: 'No se ha podido eliminar el resultado' });
 
-        return res.status(200).send({ resultados: resultadosEliminado });
+        return res.status(200).send({ resultado: resultadoEliminado });
     });
 }
 
 
 function listarResultado(req, res) {
-    Resultados.find((err, ResultadosEncontrados) => {
+    Resultado.find((err, ResultadosEncontrados) => {
         if (err) return res.status(500).send({ message: 'Error en la petición' });
 
         if (!ResultadosEncontrados) return res.status(404).send({ message: 'No se han podido listar Resultados' });
 
-        return res.status(200).send({ resultados: ResultadosEncontrados });
+        return res.status(200).send({ resultado: ResultadosEncontrados });
     });
 }
 
 function getResultado(req, res) {
-    var resultadosId = req.params.id;
+    var resultadoId = req.params.id;
 
-    Resultados.findById(resultadosId, (err, resultadosEncontrado) => {
+    Resultado.findById(resultadoId, (err, resultadoEncontrado) => {
         if (err) return res.status(500).send({ message: 'Error en la petición' });
 
-        if (!resultadosEncontrado) return res.status(404).send({ message: 'No se ha podido encontrar Resultados' });
+        if (!resultadoEncontrado) return res.status(404).send({ message: 'No se ha podido encontrar Resultados' });
 
-        return res.status(200).send({ resultados: resultadosEncontrado });
+        return res.status(200).send({ resultado: resultadoEncontrado });
     });
 }
 
